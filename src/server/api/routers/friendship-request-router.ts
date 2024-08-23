@@ -10,7 +10,7 @@ import { router } from '@/server/trpc/router'
 const SendFriendshipRequestInputSchema = z.object({
   friendUserId: IdSchema,
 })
-
+  
 const canSendFriendshipRequest = authGuard.unstable_pipe(
   async ({ ctx, rawInput, next }) => {
     const { friendUserId } = SendFriendshipRequestInputSchema.parse(rawInput)
@@ -65,6 +65,42 @@ export const friendshipRequestRouter = router({
     .use(canSendFriendshipRequest)
     .input(SendFriendshipRequestInputSchema)
     .mutation(async ({ ctx, input }) => {
+      const existFriendship = await ctx.db
+        .selectFrom('friendships')
+        .where('userId', '=', ctx.session.userId)
+        .where('friendUserId', '=', input.friendUserId)
+        .select('status')
+        .executeTakeFirst();
+        console.log('checkQ3',existFriendship)
+
+      if (existFriendship) {
+        if (existFriendship.status === FriendshipStatusSchema.Values['declined']) {
+        
+          await ctx.db
+            .updateTable('friendships')
+            .set({
+              status: FriendshipStatusSchema.Values['requested'],
+            })
+            .where('userId', '=', ctx.session.userId)
+            .where('friendUserId', '=', input.friendUserId)
+            .execute();
+        } else {
+
+          return;
+        }
+      } else {
+       
+        await ctx.db
+          .insertInto('friendships')
+          .values({
+            userId: ctx.session.userId,
+            friendUserId: input.friendUserId,
+            status: FriendshipStatusSchema.Values['requested'],
+          })
+          .execute();
+      }
+    
+
       /**
        * Question 3: Fix bug
        *
@@ -79,14 +115,7 @@ export const friendshipRequestRouter = router({
        * scenario for Question 3
        *  - Run `yarn test` to verify your answer
        */
-      return ctx.db
-        .insertInto('friendships')
-        .values({
-          userId: ctx.session.userId,
-          friendUserId: input.friendUserId,
-          status: FriendshipStatusSchema.Values['requested'],
-        })
-        .execute()
+     
     }),
 
   accept: procedure
@@ -94,6 +123,51 @@ export const friendshipRequestRouter = router({
     .input(AnswerFriendshipRequestInputSchema)
     .mutation(async ({ ctx, input }) => {
       await ctx.db.transaction().execute(async (t) => {
+        const [aCheck, bCheck] = await Promise.all([
+          t.selectFrom('friendships')
+            .where('userId', '=', ctx.session.userId)
+            .where('friendUserId', '=', input.friendUserId)
+            .select('id')
+            .executeTakeFirst(),
+            
+          t.selectFrom('friendships')
+            .where('userId', '=', input.friendUserId)
+            .where('friendUserId', '=', ctx.session.userId)
+            .select('id')
+            .executeTakeFirst()
+        ]);
+  
+        console.log('checkQ1A',aCheck)
+        if (!aCheck) {
+          await t.insertInto('friendships').values({
+            userId: ctx.session.userId,
+            friendUserId: input.friendUserId,
+            status: FriendshipStatusSchema.Values['accepted'],
+          }).execute();
+        } else {
+          await t.updateTable('friendships')
+            .set({ status: FriendshipStatusSchema.Values['accepted'] })
+            .where('userId', '=', ctx.session.userId)
+            .where('friendUserId', '=', input.friendUserId)
+            .execute();
+        }
+  
+    
+        if (!bCheck) {
+          await t.insertInto('friendships').values({
+            userId: input.friendUserId,
+            friendUserId: ctx.session.userId,
+            status: FriendshipStatusSchema.Values['accepted'],
+          }).execute();
+        } else {
+          await t.updateTable('friendships')
+            .set({ status: FriendshipStatusSchema.Values['accepted'] })
+            .where('userId', '=', input.friendUserId)
+            .where('friendUserId', '=', ctx.session.userId)
+            .execute();
+        }
+      
+
         /**
          * Question 1: Implement api to accept a friendship request
          *
@@ -123,7 +197,16 @@ export const friendshipRequestRouter = router({
   decline: procedure
     .use(canAnswerFriendshipRequest)
     .input(AnswerFriendshipRequestInputSchema)
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => { 
+      await ctx.db.transaction().execute(async (t) => {
+     
+      await t.updateTable('friendships')
+        .set({ status: FriendshipStatusSchema.Values['declined'] })
+        .where('userId', '=', input.friendUserId)
+        .where('friendUserId', '=', ctx.session.userId)
+        .execute();
+        })
+
       /**
        * Question 2: Implement api to decline a friendship request
        *
