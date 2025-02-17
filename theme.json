@@ -1,0 +1,103 @@
+{
+  "blocks": [
+    {
+      "type": "prompt",
+      "style": "powerline",
+      "segments": [
+        {
+          "type": "text",
+          "style": "bold",
+          "foreground": "#0000FF",
+          "background": "#00FF00",
+          "content": "┌─["
+        },
+        {
+          "type": "user",
+          "style": "bold",
+          "foreground": "#00FF00",
+          "background": "#0000FF"
+        },
+        {
+          "type": "text",
+          "style": "bold",
+          "foreground": "#0000FF",
+          "background": "#00FF00",
+          "content": "@"
+        },
+        {
+          "type": "host",
+          "style": "bold",
+          "foreground": "#00FFFF",
+          "background": "#0000FF"
+        },
+        {
+          "type": "text",
+          "style": "bold",
+          "foreground": "#0000FF",
+          "background": "#00FF00",
+          "content": "]"
+        },
+        {
+          "type": "text",
+          "style": "bold",
+          "foreground": "#0000FF",
+          "background": "#0000FF",
+          "content": " - "
+        },
+        {
+          "type": "path",
+          "style": "bold",
+          "foreground": "#FFFFFF",
+          "background": "#0000FF"
+        },
+        {
+          "type": "text",
+          "style": "bold",
+          "foreground": "#0000FF",
+          "background": "#00FF00",
+          "content": " - "
+        },
+        {
+          "type": "time",
+          "style": "bold",
+          "foreground": "#FFFF00",
+          "background": "#0000FF",
+          "content": "%a %b %d, %H:%M"
+        },
+        {
+          "type": "text",
+          "style": "bold",
+          "foreground": "#0000FF",
+          "background": "#00FF00",
+          "content": "]"
+        },
+        {
+          "type": "git",
+          "style": "bold",
+          "foreground": "#FF00FF",
+          "background": "#0000FF"
+        },
+        {
+          "type": "text",
+          "style": "bold",
+          "foreground": "#0000FF",
+          "background": "#00FF00",
+          "content": "└─["
+        },
+        {
+          "type": "text",
+          "style": "bold",
+          "foreground": "#FF00FF",
+          "content": "$"
+        },
+        {
+          "type": "text",
+          "style": "bold",
+          "foreground": "#0000FF",
+          "background": "#00FF00",
+          "content": "]"
+        }
+      ]
+    }
+  ]
+}
